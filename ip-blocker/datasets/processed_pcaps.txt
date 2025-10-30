@@ -1,0 +1,3 @@
+/home/ubuntu/pcaps/test_generated_suspicious.pcap
+/home/ubuntu/pcaps/traffic_capture.pcap
+/home/ubuntu/pcaps/test_generated.pcap
