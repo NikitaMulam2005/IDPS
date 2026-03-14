@@ -282,6 +282,14 @@ The project includes built-in simulation behavior for demos:
 
 ## 🖼️ Screenshots
 
+### Dashboard Page.jpeg
+
+<img src="screenshots/Dashboard%20Page.jpeg" alt="Dashboard Page.jpeg" title="Dashboard Page.jpeg" />
+
+### Dashboard Page (IP log search bar).jpeg
+
+<img src="screenshots/Dashboard%20Page%20%28IP%20log%20search%20bar%29.jpeg" alt="Dashboard Page (IP log search bar).jpeg" title="Dashboard Page (IP log search bar).jpeg" />
+
 ### Alerts Page.jpeg
 
 <img src="screenshots/Alerts%20Page.jpeg" alt="Alerts Page.jpeg" title="Alerts Page.jpeg" />
@@ -290,35 +298,26 @@ The project includes built-in simulation behavior for demos:
 
 <img src="screenshots/Blocked%20IPs%20Page.jpeg" alt="Blocked IPs Page.jpeg" title="Blocked IPs Page.jpeg" />
 
-### Dashboard Page (IP log search bar).jpeg
-
-<img src="screenshots/Dashboard%20Page%20%28IP%20log%20search%20bar%29.jpeg" alt="Dashboard Page (IP log search bar).jpeg" title="Dashboard Page (IP log search bar).jpeg" />
-
-### Dashboard Page.jpeg
-
-<img src="screenshots/Dashboard%20Page.jpeg" alt="Dashboard Page.jpeg" title="Dashboard Page.jpeg" />
-
 ### Health Page.jpeg
 
 <img src="screenshots/Health%20Page.jpeg" alt="Health Page.jpeg" title="Health Page.jpeg" />
-
-### Reports Page (Monthly report & threat type).jpeg
-
-<img src="screenshots/Reports%20Page%20%28Monthly%20report%20%26%20threat%20type%29.jpeg" alt="Reports Page (Monthly report & threat type).jpeg" title="Reports Page (Monthly report & threat type).jpeg" />
 
 ### Reports Page.jpeg
 
 <img src="screenshots/Reports%20Page.jpeg" alt="Reports Page.jpeg" title="Reports Page.jpeg" />
 
+### Reports Page (Monthly report & threat type).jpeg
+
+<img src="screenshots/Reports%20Page%20%28Monthly%20report%20%26%20threat%20type%29.jpeg" alt="Reports Page (Monthly report & threat type).jpeg" title="Reports Page (Monthly report & threat type).jpeg" />
+
 ### Risk Map Page.jpeg
 
 <img src="screenshots/Risk%20Map%20Page.jpeg" alt="Risk Map Page.jpeg" title="Risk Map Page.jpeg" />
-
-### Suricata IDS Page (Category Filter).jpeg
-
-<img src="screenshots/Suricata%20IDS%20Page%20%28Category%20Filter%29.jpeg" alt="Suricata IDS Page (Category Filter).jpeg" title="Suricata IDS Page (Category Filter).jpeg" />
 
 ### Suricata IDS Page.jpeg
 
 <img src="screenshots/Suricata%20IDS%20Page.jpeg" alt="Suricata IDS Page.jpeg" title="Suricata IDS Page.jpeg" />
 
+### Suricata IDS Page (Category Filter).jpeg
+
+<img src="screenshots/Suricata%20IDS%20Page%20%28Category%20Filter%29.jpeg" alt="Suricata IDS Page (Category Filter).jpeg" title="Suricata IDS Page (Category Filter).jpeg" />
