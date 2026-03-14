@@ -221,6 +221,10 @@ The project includes built-in simulation behavior for demos:
 - If Scapy packet sending fails, the backend can fall back to writing mock alerts into `eve.json`
 - The Suricata page exposes status information and can operate in a simulation-style mode when Suricata is not fully available
 
+### 🎬 Demo Video
+
+[Watch the project demo](https://drive.google.com/file/d/1UjdUlahqx6iEXLWsrWocVcSG-Gu1-Kq8/view?usp=drive_link)
+
 ## Main Screens And Features
 
 ### 📊 Dashboard
