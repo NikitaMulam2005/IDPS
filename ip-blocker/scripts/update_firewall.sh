@@ -4,7 +4,7 @@ set -e
 # === CONFIGURATION ===
 RULE_GROUP_NAME="BlockedIPs-chunk-aa"
 REGION="us-west-2"
-NEW_IPS_FILE="/home/nikitamulam2005/idps/ip-blocker/datasets/ai_block.txt"
+NEW_IPS_FILE="/home/nikitamulam2005/IDPS/ip-blocker/datasets/ai_block.txt"
 TEMP_CURRENT="/tmp/current_rules.json"
 TEMP_UPDATED="/tmp/updated_rules.json"
 

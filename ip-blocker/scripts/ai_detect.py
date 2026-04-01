@@ -9,11 +9,11 @@ from sklearn.ensemble import IsolationForest
 # ---------------- CONFIG ----------------
 SURICATA_LOG = "/var/log/suricata/eve.json"
 PCAP_FOLDER = "/home/nikitamulam2005/pcaps/"
-GEO_DB = "/home/nikitamulam2005/idps/ip-blocker/datasets/geoip.mmdb"
+GEO_DB = "/home/nikitamulam2005/IDPS/ip-blocker/datasets/geoip.mmdb"
 
-AI_BLOCK_FILE = "/home/nikitamulam2005/idps/ip-blocker/datasets/ai_block.txt"
-MERGED_FILE = "/home/nikitamulam2005/idps/ip-blocker/datasets/merged_logs.csv"
-PROCESSED_PCAPS = "/home/nikitamulam2005/idps/ip-blocker/datasets/processed_pcaps.txt"
+AI_BLOCK_FILE = "/home/nikitamulam2005/IDPS/ip-blocker/datasets/ai_block.txt"
+MERGED_FILE = "/home/nikitamulam2005/IDPS/ip-blocker/datasets/merged_logs.csv"
+PROCESSED_PCAPS = "/home/nikitamulam2005/IDPS/ip-blocker/datasets/processed_pcaps.txt"
 
 MAX_PACKETS_PER_PCAP = 1000
 

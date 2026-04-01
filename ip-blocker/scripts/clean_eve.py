@@ -3,7 +3,7 @@ import json
 
 # Paths
 input_file = "/var/log/suricata/eve.json"
-output_file = "/home/nikitamulam2005/idps/ip-blocker/datasets/eve_clean.jsonl"
+output_file = "/home/nikitamulam2005/IDPS/ip-blocker/datasets/eve_clean.jsonl"
 
 alert_count = 0
 
