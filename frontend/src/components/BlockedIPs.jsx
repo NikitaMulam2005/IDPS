@@ -18,7 +18,7 @@ const BlockedIPs = () => {
   const fetchBlockedIPs = async () => {
     try {
       const response = await axios.get(
-        `http://34.222.107.115:8000/api/blocked_ips?page=${currentPage}&per_page=${itemsPerPage}`
+        `http://35.200.167.245:8000/api/blocked_ips?page=${currentPage}&per_page=${itemsPerPage}`
       );
       setBlockedIPs(response.data.blocked_ips);
       setTotalItems(response.data.total_items);

@@ -6,7 +6,7 @@ const AlertTable = () => {
   const [pagination, setPagination] = useState({ total: 0, page: 1, per_page: 20, pages: 1 });
   const [currentPage, setCurrentPage] = useState(1);
   const [loading, setLoading] = useState(false);
-  const BASE_URL = "http://34.222.107.115:8000/api";
+  const BASE_URL = "http://35.200.167.245:8000/api";
 
   useEffect(() => {
     fetchAlerts(currentPage);

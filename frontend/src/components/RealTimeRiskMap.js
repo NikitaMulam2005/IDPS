@@ -47,7 +47,7 @@ const RealTimeRiskMap = () => {
   const [itemsPerPage, setItemsPerPage] = useState(5);
   const [error, setError] = useState(null);
 
-  const API_BASE_URL = "http://34.222.107.115:8000";
+  const API_BASE_URL = "http://35.200.167.245:8000";
 
   const fetchRiskData = async () => {
     setIsLoading(true);

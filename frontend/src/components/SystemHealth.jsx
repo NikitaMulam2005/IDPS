@@ -8,7 +8,7 @@ const SystemHealth = () => {
     const fetchHealth = async () => {
       try {
         const response = await axios.get(
-          "http://34.222.107.115:8000/api/system_health"
+          "http://35.200.167.245:8000/api/system_health"
         );
         setHealth(response.data);
       } catch (error) {
