@@ -5,9 +5,9 @@ import pandas as pd
 import geoip2.database
 import pyshark
 import ipaddress
+import re
 
 from sklearn.ensemble import IsolationForest
-from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score, classification_report
 
 # ---------------- CONFIG ----------------
 SURICATA_LOG = "/var/log/suricata/eve.json"
@@ -19,24 +19,28 @@ MERGED_FILE = "/home/nikitamulam2005/IDPS/ip-blocker/datasets/merged_logs.csv"
 PROCESSED_PCAPS = "/home/nikitamulam2005/IDPS/ip-blocker/datasets/processed_pcaps.txt"
 
 MAX_PACKETS_PER_PCAP = 1000
-WHITELIST = {"127.0.0.1"}
 
-# ---------------- Helper Functions ----------------
+WHITELIST = {
+    "127.0.0.1",
+    "8.8.8.8",
+    "1.1.1.1"
+}
 
-def is_public(ip):
+COMMON_PORTS = {80, 443, 22, 53}
+
+# ---------------- Helper ----------------
+
+def is_public_ipv4(ip):
     try:
-        return not ipaddress.ip_address(ip).is_private
+        obj = ipaddress.ip_address(ip)
+        return obj.version == 4 and not obj.is_private
     except:
         return False
 
-# ---------------- Load processed PCAPs ----------------
-processed = set()
-if os.path.exists(PROCESSED_PCAPS):
-    with open(PROCESSED_PCAPS) as f:
-        processed = set(f.read().splitlines())
+# ---------------- Load Suricata ----------------
 
-# ---------------- Suricata logs ----------------
 suricata_data = []
+
 if os.path.exists(SURICATA_LOG):
     with open(SURICATA_LOG) as f:
         for line in f:
@@ -45,145 +49,142 @@ if os.path.exists(SURICATA_LOG):
                 if log.get("event_type") in ["alert", "flow"]:
                     suricata_data.append({
                         "src_ip": log.get("src_ip"),
-                        "dest_ip": log.get("dest_ip"),
                         "dest_port": log.get("dest_port", 0),
                         "proto": log.get("proto", "NA"),
-                        "attack_type": log.get("alert", {}).get("signature", "NA"),
-                        "timestamp": log.get("timestamp")
+                        "attack_type": log.get("alert", {}).get("signature", "NA")
                     })
             except:
                 continue
 
 df_suri = pd.DataFrame(suricata_data)
 
-# ---------------- PyShark logs ----------------
-py_data = []
-pcap_files = sorted(glob.glob(os.path.join(PCAP_FOLDER, "*.pcap")))
-new_pcaps = [p for p in pcap_files if p not in processed]
+# ---------------- Load PCAP ----------------
 
-for pcap in new_pcaps:
+py_data = []
+
+pcap_files = glob.glob(os.path.join(PCAP_FOLDER, "*.pcap"))
+
+for pcap in pcap_files:
     try:
         cap = pyshark.FileCapture(pcap, only_summaries=True)
         for i, pkt in enumerate(cap):
             py_data.append({
                 "src_ip": getattr(pkt, "source", None),
-                "dest_ip": getattr(pkt, "destination", None),
                 "dest_port": int(getattr(pkt, "sport", 0)) if getattr(pkt, "sport", None) else 0,
                 "proto": getattr(pkt, "protocol", "NA"),
-                "attack_type": "NA",
-                "timestamp": getattr(pkt, "time", None)
+                "attack_type": "NA"
             })
-            if i + 1 >= MAX_PACKETS_PER_PCAP:
+            if i >= MAX_PACKETS_PER_PCAP:
                 break
-        processed.add(pcap)
-    except Exception as e:
-        print(f"[!] Error processing {pcap}: {e}")
+    except:
+        continue
 
 df_py = pd.DataFrame(py_data)
 
-# ---------------- Merge logs ----------------
+# ---------------- Merge ----------------
+
 df = pd.concat([df_suri, df_py], ignore_index=True)
 
+df.dropna(subset=["src_ip"], inplace=True)
+df = df[df["src_ip"].apply(is_public_ipv4)]
+
 if df.empty:
-    print("[!] No valid logs found. Exiting.")
+    print("[!] No valid data")
     exit()
 
-# ---------------- Clean data ----------------
-df.dropna(subset=["src_ip", "dest_ip"], inplace=True)
-df.drop_duplicates(inplace=True)
+# ---------------- Feature Engineering (IP LEVEL) ----------------
 
-# ---------------- GeoIP (safe) ----------------
-reader = geoip2.database.Reader(GEO_DB)
-geo_cache = {}
-
-def get_country(ip):
-    if ip in geo_cache:
-        return geo_cache[ip]
-    try:
-        if not ip:
-            geo_cache[ip] = "Unknown"
-        elif ipaddress.ip_address(ip).is_private:
-            geo_cache[ip] = "Private"
-        else:
-            response = reader.city(ip)
-            geo_cache[ip] = response.country.name if response.country.name else "Unknown"
-    except:
-        geo_cache[ip] = "Unknown"
-    return geo_cache[ip]
-
-df["country"] = df["src_ip"].apply(get_country)
-reader.close()
-
-# ---------------- Feature Engineering ----------------
 df["proto_code"] = df["proto"].astype('category').cat.codes
 
-# Proper labels (IMPORTANT FIX)
-df["label"] = df["attack_type"].apply(lambda x: 0 if x == "NA" else 1)
+grouped = df.groupby("src_ip").agg({
+    "dest_port": ["count", "nunique"],
+    "proto_code": "mean",
+    "attack_type": lambda x: list(x)
+})
 
-df["packet_count"] = df.groupby("src_ip")["src_ip"].transform("count")
-df["unique_ports"] = df.groupby("src_ip")["dest_port"].transform("nunique")
-df["alert_count"] = df.groupby("src_ip")["label"].transform("sum")
+grouped.columns = ["packet_count", "unique_ports", "proto_avg", "attack_list"]
+grouped = grouped.reset_index()
 
-# ---------------- AI Model ----------------
-df_ai = df[~df["src_ip"].isin(WHITELIST)].copy()
+# ---------------- Derived Features ----------------
 
-X = df_ai[[
-    "dest_port",
-    "proto_code",
+grouped["port_scan_ratio"] = grouped["unique_ports"] / (grouped["packet_count"] + 1)
+
+grouped["common_port_ratio"] = grouped["unique_ports"].apply(
+    lambda x: len([p for p in COMMON_PORTS if p < x]) / (x + 1)
+)
+
+grouped["rule_pred"] = grouped["attack_list"].apply(
+    lambda lst: 1 if any(a != "NA" for a in lst) else 0
+)
+
+# ---------------- ML Model ----------------
+
+features = grouped[[
     "packet_count",
     "unique_ports",
-    "alert_count"
+    "proto_avg",
+    "port_scan_ratio",
+    "common_port_ratio"
 ]]
 
-clf = IsolationForest(contamination=0.1, random_state=42)
-df_ai["anomaly"] = clf.fit_predict(X)
+clf = IsolationForest(
+    contamination=0.02,
+    n_estimators=200,
+    random_state=42
+)
 
-df_ai["pred"] = df_ai["anomaly"].apply(lambda x: 1 if x == -1 else 0)
+grouped["ml_pred"] = clf.fit_predict(features)
+grouped["ml_pred"] = grouped["ml_pred"].apply(lambda x: 1 if x == -1 else 0)
 
-# ---------------- Merge predictions ----------------
-df = df.merge(df_ai[["src_ip", "pred"]], on="src_ip", how="left")
-df["pred"] = df["pred"].fillna(0)
+# ---------------- Risk Score ----------------
 
-# ---------------- Hybrid Detection ----------------
-df["final_pred"] = ((df["label"] == 1) | (df["pred"] == 1)).astype(int)
+grouped["risk_score"] = (
+    grouped["packet_count"] * 0.3 +
+    grouped["unique_ports"] * 0.3 +
+    grouped["port_scan_ratio"] * 0.2 +
+    (1 - grouped["common_port_ratio"]) * 0.2
+)
 
-# ---------------- Evaluation (FIXED) ----------------
-y_true = df["label"]
-y_pred = df["final_pred"]
+grouped["risk_score"] = grouped["risk_score"] / grouped["risk_score"].max()
 
-print("\n📊 FINAL HYBRID MODEL PERFORMANCE:")
-print("Accuracy:", accuracy_score(y_true, y_pred))
-print("Precision:", precision_score(y_true, y_pred, zero_division=0))
-print("Recall:", recall_score(y_true, y_pred, zero_division=0))
-print("F1 Score:", f1_score(y_true, y_pred, zero_division=0))
+# ---------------- Final Decision ----------------
 
-print("\n📊 Classification Report:")
-print(classification_report(y_true, y_pred, zero_division=0))
+grouped["final_pred"] = (
+    (grouped["ml_pred"] == 1) |
+    (grouped["rule_pred"] == 1) |
+    (grouped["risk_score"] > 0.6)
+).astype(int)
 
-# ---------------- Filter only PUBLIC IPs ----------------
-suspicious_ips = df[df["final_pred"] == 1]["src_ip"].unique()
+# ---------------- Select IPs to block ----------------
+
+suspicious_ips = grouped[
+    (grouped["final_pred"] == 1) &
+    (grouped["risk_score"] > 0.6)
+]["src_ip"]
 
 suspicious_ips = [
     ip for ip in suspicious_ips
-    if is_public(ip) and ip not in WHITELIST
+    if ip not in WHITELIST
 ]
 
-# ---------------- Save suspicious IPs ----------------
+# ---------------- Save ----------------
+
 with open(AI_BLOCK_FILE, "w") as f:
     for ip in suspicious_ips:
         f.write(ip + "\n")
 
-print(f"\n🚨 Public Suspicious IPs ({len(suspicious_ips)}):")
-for ip in suspicious_ips:
+# ---------------- Debug Output ----------------
+
+print("\n📊 Detection Summary:")
+print("Total IPs:", len(grouped))
+print("Suspicious IPs:", len(suspicious_ips))
+
+print("\n🚨 Suspicious IPs:")
+for ip in suspicious_ips[:20]:
     print(ip)
 
 # ---------------- Save logs ----------------
-df.to_csv(MERGED_FILE, index=False)
 
-# ---------------- Save processed PCAPs ----------------
-with open(PROCESSED_PCAPS, "w") as f:
-    for p in processed:
-        f.write(p + "\n")
+grouped.to_csv(MERGED_FILE, index=False)
 
-print("\n✅ Processing complete!") 
-
+print("\n✅ Processing complete!")
