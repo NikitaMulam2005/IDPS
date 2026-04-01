@@ -62,11 +62,11 @@ async def custom_exception_handler(request, exc):
 # Paths & Global Status
 SURICATA_PATH = "/usr/bin/suricata"
 EVE_JSON_PATH = "/var/log/suricata/eve.json"  # Updated to match ai_detect.py
-MERGED_LOGS_CSV = "/home/ubuntu/idps/ip-blocker/datasets/merged_logs.csv"
-IP_BLOCK_TXT = "/home/ubuntu/idps/ip-blocker/datasets/ai_block.txt"
-DYNAMIC_BLOCK_SCRIPT = "/home/ubuntu/idps/ip-blocker/scripts/dynamic_block.sh"
-DYNAMIC_UNBLOCK_SCRIPT = "/home/ubuntu/idps/ip-blocker/scripts/dynamic_unblock.sh"
-AI_DETECT_SCRIPT = "/home/ubuntu/idps/ip-blocker/scripts/ai_detect.py"
+MERGED_LOGS_CSV = "/home/nikitamulam2005/idps/ip-blocker/datasets/merged_logs.csv"
+IP_BLOCK_TXT = "/home/nikitamulam2005/idps/ip-blocker/datasets/ai_block.txt"
+DYNAMIC_BLOCK_SCRIPT = "/home/nikitamulam2005/idps/ip-blocker/scripts/dynamic_block.sh"
+DYNAMIC_UNBLOCK_SCRIPT = "/home/nikitamulam2005/idps/ip-blocker/scripts/dynamic_unblock.sh"
+AI_DETECT_SCRIPT = "/home/nikitamulam2005/idps/ip-blocker/scripts/ai_detect.py"
 
 STATUS = {
     "running": False,
