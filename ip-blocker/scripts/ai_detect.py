@@ -5,9 +5,9 @@ import pandas as pd
 import geoip2.database
 import pyshark
 import ipaddress
-import re
 
 from sklearn.ensemble import IsolationForest
+from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score
 
 # ---------------- CONFIG ----------------
 SURICATA_LOG = "/var/log/suricata/eve.json"
@@ -16,7 +16,6 @@ GEO_DB = "/home/nikitamulam2005/IDPS/ip-blocker/datasets/geoip.mmdb"
 
 AI_BLOCK_FILE = "/home/nikitamulam2005/IDPS/ip-blocker/datasets/ai_block.txt"
 MERGED_FILE = "/home/nikitamulam2005/IDPS/ip-blocker/datasets/merged_logs.csv"
-PROCESSED_PCAPS = "/home/nikitamulam2005/IDPS/ip-blocker/datasets/processed_pcaps.txt"
 
 MAX_PACKETS_PER_PCAP = 1000
 
@@ -61,7 +60,6 @@ df_suri = pd.DataFrame(suricata_data)
 # ---------------- Load PCAP ----------------
 
 py_data = []
-
 pcap_files = glob.glob(os.path.join(PCAP_FOLDER, "*.pcap"))
 
 for pcap in pcap_files:
@@ -92,7 +90,7 @@ if df.empty:
     print("[!] No valid data")
     exit()
 
-# ---------------- Feature Engineering (IP LEVEL) ----------------
+# ---------------- Feature Engineering ----------------
 
 df["proto_code"] = df["proto"].astype('category').cat.codes
 
@@ -155,7 +153,7 @@ grouped["final_pred"] = (
     (grouped["risk_score"] > 0.6)
 ).astype(int)
 
-# ---------------- Select IPs to block ----------------
+# ---------------- Select IPs ----------------
 
 suspicious_ips = grouped[
     (grouped["final_pred"] == 1) &
@@ -173,18 +171,46 @@ with open(AI_BLOCK_FILE, "w") as f:
     for ip in suspicious_ips:
         f.write(ip + "\n")
 
-# ---------------- Debug Output ----------------
+grouped.to_csv(MERGED_FILE, index=False)
 
-print("\n📊 Detection Summary:")
-print("Total IPs:", len(grouped))
-print("Suspicious IPs:", len(suspicious_ips))
+# ---------------- Metrics ----------------
+
+total_ips = len(grouped)
+ml_hits = grouped["ml_pred"].sum()
+rule_hits = grouped["rule_pred"].sum()
+final_hits = len(suspicious_ips)
+
+print("\n📊 MODEL PERFORMANCE SUMMARY:")
+print(f"Total IPs analyzed: {total_ips}")
+print(f"ML anomalies: {ml_hits}")
+print(f"Rule detections: {rule_hits}")
+print(f"Final blocked IPs: {final_hits}")
+print(f"Detection rate: {(final_hits / total_ips) * 100:.2f}%")
+
+# Optional hybrid evaluation
+grouped["label"] = grouped["rule_pred"]
+
+y_true = grouped["label"]
+y_pred = grouped["final_pred"]
+
+print("\n📊 HYBRID METRICS (approx):")
+print("Accuracy:", accuracy_score(y_true, y_pred))
+print("Precision:", precision_score(y_true, y_pred, zero_division=0))
+print("Recall:", recall_score(y_true, y_pred, zero_division=0))
+print("F1 Score:", f1_score(y_true, y_pred, zero_division=0))
+
+# ---------------- Risk Insights ----------------
+
+print("\n📊 Risk Score Stats:")
+print(grouped["risk_score"].describe())
+
+top_risky = grouped.sort_values(by="risk_score", ascending=False).head(10)
+
+print("\n🔥 Top Risky IPs:")
+print(top_risky[["src_ip", "risk_score", "ml_pred", "rule_pred"]])
 
 print("\n🚨 Suspicious IPs:")
 for ip in suspicious_ips[:20]:
     print(ip)
-
-# ---------------- Save logs ----------------
-
-grouped.to_csv(MERGED_FILE, index=False)
 
 print("\n✅ Processing complete!")
