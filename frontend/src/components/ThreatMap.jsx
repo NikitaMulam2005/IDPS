@@ -14,7 +14,7 @@ const ThreatMap = () => {
   const fetchThreatData = async () => {
     try {
       const response = await axios.get(
-        "http://35.200.167.245:8000/api/threat_trends"
+        "http://34.93.227.10:8000/api/threat_trends"
       );
       setThreatData(response.data);
     } catch (error) {

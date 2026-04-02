@@ -18,7 +18,7 @@ const BlockedIPs = () => {
   const fetchBlockedIPs = async () => {
     try {
       const response = await axios.get(
-        `http://35.200.167.245:8000/api/blocked_ips?page=${currentPage}&per_page=${itemsPerPage}`
+        `http://34.93.227.10:8000/api/blocked_ips?page=${currentPage}&per_page=${itemsPerPage}`
       );
       setBlockedIPs(response.data.blocked_ips);
       setTotalItems(response.data.total_items);
@@ -31,7 +31,7 @@ const BlockedIPs = () => {
 
   const handleUnblock = async (ip) => {
     try {
-      await axios.post("http://34.222.107.115:8000/api/unblock_ip", { ip });
+      await axios.post("http://34.93.227.10:8000/api/unblock_ip", { ip });
       fetchBlockedIPs();
       setError("");
     } catch (error) {
@@ -49,7 +49,7 @@ const BlockedIPs = () => {
       return;
     }
     try {
-      await axios.post("http://34.222.107.115:8000/api/block_ip", { ip: newIP });
+      await axios.post("http://34.93.227.10:8000/api/block_ip", { ip: newIP });
       setNewIP("");
       fetchBlockedIPs();
       setError("");

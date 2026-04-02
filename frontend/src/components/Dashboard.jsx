@@ -17,7 +17,7 @@ const Dashboard = () => {
   const [searchResults, setSearchResults] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  const BASE_URL = "http://35.200.167.245:8000/api"; // Backend URL
+  const BASE_URL = "http://34.93.227.10:8000/api"; // Backend URL
 
   // Fetch Dashboard stats
   const fetchStats = async () => {

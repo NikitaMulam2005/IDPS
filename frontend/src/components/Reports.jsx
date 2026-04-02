@@ -14,7 +14,7 @@ const Reports = () => {
 
   const fetchThreatTrends = async () => {
     try {
-      const response = await axios.get("http://35.200.167.245:8000/api/threat_trends");
+      const response = await axios.get("http://34.93.227.10:8000/api/threat_trends");
       console.log("Threat trends response:", response.data);
       setThreatTrends(response.data);
       setError(null);
@@ -28,7 +28,7 @@ const Reports = () => {
     setLoading(true);
     setError(null);
     try {
-      const response = await axios.get(`http://34.222.107.115:8000/api/generate_report?type=${type}`);
+      const response = await axios.get(`http://34.93.227.10:8000/api/generate_report?type=${type}`);
       console.log("Report response:", response.data);
       setReportData(response.data);
       setReportType(type);

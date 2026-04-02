@@ -10,7 +10,7 @@ const SuricataDashboard = () => {
   const [severityFilter, setSeverityFilter] = useState("all");
   const [categoryFilter, setCategoryFilter] = useState("all");
   const [isStatsCollapsed, setIsStatsCollapsed] = useState(false);
-  const BASE_URL = "http://35.200.167.245:8000/api";
+  const BASE_URL = "http://34.93.227.10:8000/api";
 
   useEffect(() => {
     fetchSuricataData();
